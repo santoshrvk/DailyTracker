@@ -169,18 +169,41 @@ function saveDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
 
-  let entry = {
-    data: data,
-    planned: document.getElementById("planned").value,
-    school: document.querySelector('input[name="school"]:checked').value,
+  let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
+  let planned = parseFloat(document.getElementById("planned").value) || 3;
+
+  let activityTotal = 0;
+  for(let key in data){
+    activityTotal += data[key];
+  }
+
+  let total = activityTotal + (school * 2);
+  let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
+
+  let payload = {
+    date: date,
+    planned: planned,
+    school: school,
     assignment: document.querySelector('input[name="assignment"]:checked').value,
+    ...data,
+    total: total,
+    percent: percent,
     notes: document.getElementById("notes").value
   };
 
-  localStorage.setItem("tracker-" + date, JSON.stringify(entry));
-
-  lockForm();
-  alert("Submitted!");
+  fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.text())
+  .then(() => {
+    alert("Submitted to Google Sheets!");
+    lockForm();
+  })
+  .catch(err => {
+    alert("Error saving data");
+    console.error(err);
+  });
 }
 
 // Lock UI
