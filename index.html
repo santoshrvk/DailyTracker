@@ -14,10 +14,7 @@
       margin-bottom: 10px;
     }
 
-    label {
-      font-weight: 500;
-      font-size: 14px;
-    }
+    label { font-weight: 500; }
 
     input, textarea {
       width: 100%;
@@ -46,19 +43,16 @@
 
 <h2>📅 Daily Tracker</h2>
 
-<!-- Date -->
 <div class="form-row">
   <label>Date</label>
   <input type="date" id="date" onchange="loadDay()">
 </div>
 
-<!-- Planned -->
 <div class="form-row">
   <label>Planned Hours</label>
   <input type="number" id="planned" value="3" oninput="update()">
 </div>
 
-<!-- School -->
 <div class="form-row">
   <label>Attended School</label>
   <div class="radio-group">
@@ -67,7 +61,6 @@
   </div>
 </div>
 
-<!-- Assignment -->
 <div class="form-row">
   <label>School Assignment</label>
   <div class="radio-group">
@@ -92,7 +85,6 @@
 <h3>Total Hours: <span id="total">0</span></h3>
 <h3>Progress: <span id="percent">0</span>%</h3>
 
-<!-- Notes -->
 <div class="form-row">
   <label>Notes</label>
   <textarea id="notes"></textarea>
@@ -102,6 +94,8 @@
 <button onclick="saveDay()">✅ Submit</button>
 
 <script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWTMzdilOwAxhOSQxCA0HxOAw1jXyA0ZPEs0Wr275Z5zTJ4ejnuzIlEccjFwJaHa6r1g/exec";
+
 let data = {
   math:0, science:0, english:0,
   coding:0, social:0, music:0, chores:0
@@ -110,17 +104,15 @@ let data = {
 let pressTimer;
 let isLongPress = false;
 
-// Default today
+// default today
 window.onload = function() {
   let today = new Date().toISOString().split('T')[0];
   document.getElementById("date").value = today;
-  loadDay();
 };
 
-// Long press = subtract
+// long press = subtract
 function startPress(type){
   isLongPress = false;
-
   pressTimer = setTimeout(() => {
     isLongPress = true;
     if(data[type] > 0){
@@ -130,10 +122,9 @@ function startPress(type){
   }, 400);
 }
 
-// Click = add
+// click = add
 function endPress(type){
   clearTimeout(pressTimer);
-
   if(!isLongPress){
     data[type] += 0.5;
     updateUI(type);
@@ -141,22 +132,18 @@ function endPress(type){
 }
 
 function updateUI(type){
-  if(data[type] < 0) data[type] = 0;
   document.getElementById(type).innerText = data[type];
   update();
 }
 
-// Calculate totals
+// calculate totals
 function update(){
-  let activityTotal = 0;
-  for(let key in data){
-    activityTotal += data[key];
-  }
+  let totalActivities = Object.values(data).reduce((a,b)=>a+b,0);
 
   let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
   let planned = parseFloat(document.getElementById("planned").value) || 3;
 
-  let total = activityTotal + (school * 2);
+  let total = totalActivities + (school * 2);
 
   document.getElementById("total").innerText = total.toFixed(1);
 
@@ -164,106 +151,44 @@ function update(){
   document.getElementById("percent").innerText = percent;
 }
 
-// Save + lock
+// submit to Google Sheets
 function saveDay(){
   let date = document.getElementById("date").value;
-  if(!date) return;
+  if(!date) return alert("Select date");
 
   let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
   let planned = parseFloat(document.getElementById("planned").value) || 3;
 
-  let activityTotal = 0;
-  for(let key in data){
-    activityTotal += data[key];
-  }
-
-  let total = activityTotal + (school * 2);
+  let totalActivities = Object.values(data).reduce((a,b)=>a+b,0);
+  let total = totalActivities + (school * 2);
   let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
 
   let payload = {
-    date: date,
-    planned: planned,
-    school: school,
+    date,
+    planned,
+    school,
     assignment: document.querySelector('input[name="assignment"]:checked').value,
     ...data,
-    total: total,
-    percent: percent,
+    total,
+    percent,
     notes: document.getElementById("notes").value
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbwWTMzdilOwAxhOSQxCA0HxOAw1jXyA0ZPEs0Wr275Z5zTJ4ejnuzIlEccjFwJaHa6r1g/exec", {
+  fetch(WEB_APP_URL, {
     method: "POST",
+    mode: "no-cors",
     body: JSON.stringify(payload)
-  })
-  .then(res => res.text())
-  .then(() => {
-    alert("Submitted to Google Sheets!");
-    lockForm();
-  })
-  .catch(err => {
-    alert("Error saving data");
-    console.error(err);
   });
+
+  alert("Submitted to Google Sheets!");
+  lockForm();
 }
 
-// Lock UI
+// lock UI
 function lockForm(){
   document.querySelectorAll("input, textarea").forEach(el => el.disabled = true);
-
-  document.querySelectorAll("button").forEach(btn => {
-    btn.disabled = true;
-    btn.style.backgroundColor = "#ccc";
-    btn.style.color = "#666";
-  });
-
+  document.querySelectorAll("button").forEach(btn => btn.disabled = true);
   document.body.style.opacity = "0.6";
-
-  let msg = document.createElement("h3");
-  msg.innerText = "✅ Submitted (Locked)";
-  msg.style.color = "green";
-  document.body.appendChild(msg);
-}
-
-// Load saved day
-function loadDay(){
-  let date = document.getElementById("date").value;
-  if(!date) return;
-
-  let saved = localStorage.getItem("tracker-" + date);
-
-  if(saved){
-    let entry = JSON.parse(saved);
-    data = entry.data;
-
-    for(let key in data){
-      document.getElementById(key).innerText = data[key];
-    }
-
-    document.getElementById("planned").value = entry.planned || 3;
-
-    document.querySelector(`input[name="school"][value="${entry.school}"]`).checked = true;
-    document.querySelector(`input[name="assignment"][value="${entry.assignment}"]`).checked = true;
-
-    document.getElementById("notes").value = entry.notes || "";
-
-    lockForm();
-  } else {
-    data = { math:0, science:0, english:0, coding:0, social:0, music:0, chores:0 };
-
-    for(let key in data){
-      document.getElementById(key).innerText = 0;
-    }
-
-    document.getElementById("planned").value = 3;
-    document.querySelector('input[name="school"][value="0"]').checked = true;
-    document.querySelector('input[name="assignment"][value="0"]').checked = true;
-    document.getElementById("notes").value = "";
-
-    document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
-    document.body.style.opacity = "1";
-  }
-
-  update();
 }
 </script>
 
