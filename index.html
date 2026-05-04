@@ -59,17 +59,21 @@ let data = {
 };
 
 let pressTimer;
+let isLongPress = false;
 
-// Default today's date
+// Default today
 window.onload = function() {
   let today = new Date().toISOString().split('T')[0];
   document.getElementById("date").value = today;
   loadDay();
 };
 
-// Handle press start
+// Long press = subtract
 function startPress(type){
+  isLongPress = false;
+
   pressTimer = setTimeout(() => {
+    isLongPress = true;
     if(data[type] > 0){
       data[type] -= 0.5;
       updateUI(type);
@@ -77,36 +81,43 @@ function startPress(type){
   }, 400);
 }
 
-// Handle press end
+// Click = add
 function endPress(type){
-  if(pressTimer){
-    clearTimeout(pressTimer);
+  clearTimeout(pressTimer);
+
+  if(!isLongPress){
     data[type] += 0.5;
     updateUI(type);
   }
 }
 
+// Update UI + calculations
 function updateUI(type){
   if(data[type] < 0) data[type] = 0;
   document.getElementById(type).innerText = data[type];
   update();
 }
 
-// Update totals
+// FIXED update function
 function update(){
-  let activityTotal = Object.values(data).reduce((a,b)=>a+b,0);
+  let activityTotal = 0;
 
-  let school = parseInt(document.querySelector('input[name="school"]:checked').value);
-  let planned = document.getElementById("planned").value || 3;
+  for(let key in data){
+    activityTotal += data[key];
+  }
+
+  let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
+  let planned = parseFloat(document.getElementById("planned").value) || 3;
 
   let total = activityTotal + (school * 2);
-  document.getElementById("total").innerText = total;
+
+  document.getElementById("total").innerText = total.toFixed(1);
 
   let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
   document.getElementById("percent").innerText = percent;
 }
 
-// Save + lock form
+// Save + lock
 function saveDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
@@ -125,11 +136,9 @@ function saveDay(){
   alert("Submitted!");
 }
 
-// Lock form after submit
+// Lock UI
 function lockForm(){
-  document.querySelectorAll("input, textarea").forEach(el => {
-    el.disabled = true;
-  });
+  document.querySelectorAll("input, textarea").forEach(el => el.disabled = true);
 
   document.querySelectorAll("button").forEach(btn => {
     btn.disabled = true;
@@ -154,7 +163,7 @@ function loadDay(){
 
   if(saved){
     let entry = JSON.parse(saved);
-    data = entry.data || data;
+    data = entry.data;
 
     for(let key in data){
       document.getElementById(key).innerText = data[key];
@@ -162,8 +171,8 @@ function loadDay(){
 
     document.getElementById("planned").value = entry.planned || 3;
 
-    document.querySelector(`input[name="school"][value="${entry.school || 0}"]`).checked = true;
-    document.querySelector(`input[name="assignment"][value="${entry.assignment || 0}"]`).checked = true;
+    document.querySelector(`input[name="school"][value="${entry.school}"]`).checked = true;
+    document.querySelector(`input[name="assignment"][value="${entry.assignment}"]`).checked = true;
 
     document.getElementById("notes").value = entry.notes || "";
 
@@ -180,7 +189,6 @@ function loadDay(){
     document.querySelector('input[name="assignment"][value="0"]').checked = true;
     document.getElementById("notes").value = "";
 
-    // unlock if new day
     document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
     document.body.style.opacity = "1";
   }
