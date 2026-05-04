@@ -4,15 +4,41 @@
   <title>Daily Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    button { padding: 15px; font-size: 16px; }
+    body { font-family: Arial; padding: 15px; }
+    input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top:10px; }
+    button { padding: 12px; font-size: 14px; }
   </style>
 </head>
 <body>
 
-<h2>Daily Tracker</h2>
+<h2>📅 Daily Tracker</h2>
 
+<label>Date</label>
+<input type="date" id="date">
+
+<label>Day</label>
+<select id="day">
+  <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+  <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+</select>
+
+<label>Planned Hours</label>
+<input type="number" id="planned" oninput="update()">
+
+<label>Attended School</label>
+<select id="school" onchange="update()">
+  <option value="0">No</option>
+  <option value="1">Yes</option>
+</select>
+
+<label>School Assignment Completed</label>
+<select id="assignment" onchange="update()">
+  <option value="0">No</option>
+  <option value="1">Yes</option>
+</select>
+
+<h3>📚 Activities</h3>
 <div class="grid">
   <button onclick="add('math')">Math (<span id="math">0</span>h)</button>
   <button onclick="add('science')">Science (<span id="science">0</span>h)</button>
@@ -23,8 +49,12 @@
   <button onclick="add('chores')">Chores (<span id="chores">0</span>h)</button>
 </div>
 
-<h3>Total: <span id="total">0</span> hrs</h3>
+<h3>Total Hours: <span id="total">0</span></h3>
 <h3>Score: <span id="score">0</span></h3>
+<h3>Progress %: <span id="percent">0</span>%</h3>
+
+<label>Notes</label>
+<textarea id="notes"></textarea>
 
 <script>
 let data = {
@@ -42,7 +72,14 @@ function update(){
   let total = Object.values(data).reduce((a,b)=>a+b,0);
   document.getElementById("total").innerText = total;
 
-  let score = total * 5;
+  let planned = document.getElementById("planned").value || 0;
+  let school = document.getElementById("school").value;
+  let assignment = document.getElementById("assignment").value;
+
+  let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
+  document.getElementById("percent").innerText = percent;
+
+  let score = (school * 10) + (assignment * 10) + (total * 5);
   document.getElementById("score").innerText = score;
 }
 </script>
