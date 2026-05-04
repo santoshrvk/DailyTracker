@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    button { padding: 15px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h2>Daily Tracker</h2>
+
+<div class="grid">
+  <button onclick="add('math')">Math (<span id="math">0</span>h)</button>
+  <button onclick="add('science')">Science (<span id="science">0</span>h)</button>
+  <button onclick="add('english')">English (<span id="english">0</span>h)</button>
+  <button onclick="add('coding')">Coding (<span id="coding">0</span>h)</button>
+  <button onclick="add('social')">Social (<span id="social">0</span>h)</button>
+  <button onclick="add('music')">Music (<span id="music">0</span>h)</button>
+  <button onclick="add('chores')">Chores (<span id="chores">0</span>h)</button>
+</div>
+
+<h3>Total: <span id="total">0</span> hrs</h3>
+<h3>Score: <span id="score">0</span></h3>
+
+<script>
+let data = {
+  math:0, science:0, english:0,
+  coding:0, social:0, music:0, chores:0
+};
+
+function add(type){
+  data[type] += 0.5;
+  document.getElementById(type).innerText = data[type];
+  update();
+}
+
+function update(){
+  let total = Object.values(data).reduce((a,b)=>a+b,0);
+  document.getElementById("total").innerText = total;
+
+  let score = total * 5;
+  document.getElementById("score").innerText = score;
+}
+</script>
+
+</body>
+</html>
