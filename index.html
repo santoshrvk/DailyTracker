@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: Arial; padding: 15px; }
-    input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; }
+    input, textarea { width: 100%; padding: 8px; margin: 5px 0; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top:10px; }
     button { padding: 12px; font-size: 14px; }
   </style>
@@ -23,6 +23,8 @@
 <label>Attended School</label><br>
 <input type="radio" name="school" value="1" onchange="update()"> Yes
 <input type="radio" name="school" value="0" checked onchange="update()"> No
+
+<br><br>
 
 <label>School Assignment Completed</label><br>
 <input type="radio" name="assignment" value="1" onchange="update()"> Yes
@@ -58,7 +60,7 @@ let data = {
 
 let pressTimer;
 
-// Default today
+// Default today's date
 window.onload = function() {
   let today = new Date().toISOString().split('T')[0];
   document.getElementById("date").value = today;
@@ -68,7 +70,6 @@ window.onload = function() {
 // Handle press start
 function startPress(type){
   pressTimer = setTimeout(() => {
-    // long press → subtract
     if(data[type] > 0){
       data[type] -= 0.5;
       updateUI(type);
@@ -80,7 +81,6 @@ function startPress(type){
 function endPress(type){
   if(pressTimer){
     clearTimeout(pressTimer);
-    // short click → add
     data[type] += 0.5;
     updateUI(type);
   }
@@ -96,7 +96,7 @@ function updateUI(type){
 function update(){
   let activityTotal = Object.values(data).reduce((a,b)=>a+b,0);
 
-  let school = parseInt(document.getElementById("school").value);
+  let school = parseInt(document.querySelector('input[name="school"]:checked').value);
   let planned = document.getElementById("planned").value || 3;
 
   let total = activityTotal + (school * 2);
@@ -106,7 +106,7 @@ function update(){
   document.getElementById("percent").innerText = percent;
 }
 
-// Save
+// Save + lock form
 function saveDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
@@ -121,18 +121,31 @@ function saveDay(){
 
   localStorage.setItem("tracker-" + date, JSON.stringify(entry));
 
+  lockForm();
   alert("Submitted!");
-
-  // Try closing page
-  window.close();
-
-  // Fallback (mobile browsers)
-  setTimeout(() => {
-    window.location.href = "about:blank";
-  }, 500);
 }
 
-// Load
+// Lock form after submit
+function lockForm(){
+  document.querySelectorAll("input, textarea").forEach(el => {
+    el.disabled = true;
+  });
+
+  document.querySelectorAll("button").forEach(btn => {
+    btn.disabled = true;
+    btn.style.backgroundColor = "#ccc";
+    btn.style.color = "#666";
+  });
+
+  document.body.style.opacity = "0.6";
+
+  let msg = document.createElement("h3");
+  msg.innerText = "✅ Submitted (Locked)";
+  msg.style.color = "green";
+  document.body.appendChild(msg);
+}
+
+// Load saved day
 function loadDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
@@ -148,18 +161,28 @@ function loadDay(){
     }
 
     document.getElementById("planned").value = entry.planned || 3;
+
     document.querySelector(`input[name="school"][value="${entry.school || 0}"]`).checked = true;
     document.querySelector(`input[name="assignment"][value="${entry.assignment || 0}"]`).checked = true;
+
     document.getElementById("notes").value = entry.notes || "";
+
+    lockForm();
   } else {
     data = { math:0, science:0, english:0, coding:0, social:0, music:0, chores:0 };
+
     for(let key in data){
       document.getElementById(key).innerText = 0;
     }
+
     document.getElementById("planned").value = 3;
-    document.getElementById("school").value = 0;
-    document.getElementById("assignment").value = 0;
+    document.querySelector('input[name="school"][value="0"]').checked = true;
+    document.querySelector('input[name="assignment"][value="0"]').checked = true;
     document.getElementById("notes").value = "";
+
+    // unlock if new day
+    document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
+    document.body.style.opacity = "1";
   }
 
   update();
