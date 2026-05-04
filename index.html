@@ -32,25 +32,27 @@
   <option value="1">Yes</option>
 </select>
 
-<h3>📚 Activities (tap to add/remove 0.5h)</h3>
+<h3>📚 Activities</h3>
+<p style="font-size:12px;">Tap = +0.5h | Hold = -0.5h</p>
+
 <div class="grid">
-  <button onclick="toggle('math')">Math (<span id="math">0</span>h)</button>
-  <button onclick="toggle('science')">Science (<span id="science">0</span>h)</button>
-  <button onclick="toggle('english')">English (<span id="english">0</span>h)</button>
-  <button onclick="toggle('coding')">Coding (<span id="coding">0</span>h)</button>
-  <button onclick="toggle('social')">Social (<span id="social">0</span>h)</button>
-  <button onclick="toggle('music')">Music (<span id="music">0</span>h)</button>
-  <button onclick="toggle('chores')">Chores (<span id="chores">0</span>h)</button>
+  <button onmousedown="startPress('math')" onmouseup="endPress('math')">Math (<span id="math">0</span>h)</button>
+  <button onmousedown="startPress('science')" onmouseup="endPress('science')">Science (<span id="science">0</span>h)</button>
+  <button onmousedown="startPress('english')" onmouseup="endPress('english')">English (<span id="english">0</span>h)</button>
+  <button onmousedown="startPress('coding')" onmouseup="endPress('coding')">Coding (<span id="coding">0</span>h)</button>
+  <button onmousedown="startPress('social')" onmouseup="endPress('social')">Social (<span id="social">0</span>h)</button>
+  <button onmousedown="startPress('music')" onmouseup="endPress('music')">Music (<span id="music">0</span>h)</button>
+  <button onmousedown="startPress('chores')" onmouseup="endPress('chores')">Chores (<span id="chores">0</span>h)</button>
 </div>
 
 <h3>Total Hours: <span id="total">0</span></h3>
-<h3>Progress: <span id="percent">0</span></h3>
+<h3>Progress: <span id="percent">0</span>%</h3>
 
 <label>Notes</label>
 <textarea id="notes"></textarea>
 
 <br><br>
-<button onclick="saveDay()">💾 Save</button>
+<button onclick="saveDay()">✅ Submit</button>
 
 <script>
 let data = {
@@ -58,20 +60,38 @@ let data = {
   coding:0, social:0, music:0, chores:0
 };
 
-// Default today's date
+let pressTimer;
+
+// Default today
 window.onload = function() {
   let today = new Date().toISOString().split('T')[0];
   document.getElementById("date").value = today;
   loadDay();
 };
 
-// Toggle add/remove 0.5
-function toggle(type){
-  if(data[type] > 0){
-    data[type] -= 0.5;
-  } else {
+// Handle press start
+function startPress(type){
+  pressTimer = setTimeout(() => {
+    // long press → subtract
+    if(data[type] > 0){
+      data[type] -= 0.5;
+      updateUI(type);
+    }
+  }, 400);
+}
+
+// Handle press end
+function endPress(type){
+  if(pressTimer){
+    clearTimeout(pressTimer);
+    // short click → add
     data[type] += 0.5;
+    updateUI(type);
   }
+}
+
+function updateUI(type){
+  if(data[type] < 0) data[type] = 0;
   document.getElementById(type).innerText = data[type];
   update();
 }
@@ -104,7 +124,7 @@ function saveDay(){
   };
 
   localStorage.setItem("tracker-" + date, JSON.stringify(entry));
-  alert("Saved!");
+  alert("Submitted!");
 }
 
 // Load
