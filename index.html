@@ -191,7 +191,7 @@ function saveDay(){
     notes: document.getElementById("notes").value
   };
 
-  fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+  fetch("https://script.google.com/macros/s/AKfycbwWTMzdilOwAxhOSQxCA0HxOAw1jXyA0ZPEs0Wr275Z5zTJ4ejnuzIlEccjFwJaHa6r1g/exec", {
     method: "POST",
     body: JSON.stringify(payload)
   })
