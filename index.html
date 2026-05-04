@@ -32,22 +32,25 @@
   <option value="1">Yes</option>
 </select>
 
-<h3>📚 Activities</h3>
+<h3>📚 Activities (tap to add/remove 0.5h)</h3>
 <div class="grid">
-  <button onclick="add('math')">Math (<span id="math">0</span>h)</button>
-  <button onclick="add('science')">Science (<span id="science">0</span>h)</button>
-  <button onclick="add('english')">English (<span id="english">0</span>h)</button>
-  <button onclick="add('coding')">Coding (<span id="coding">0</span>h)</button>
-  <button onclick="add('social')">Social (<span id="social">0</span>h)</button>
-  <button onclick="add('music')">Music (<span id="music">0</span>h)</button>
-  <button onclick="add('chores')">Chores (<span id="chores">0</span>h)</button>
+  <button onclick="toggle('math')">Math (<span id="math">0</span>h)</button>
+  <button onclick="toggle('science')">Science (<span id="science">0</span>h)</button>
+  <button onclick="toggle('english')">English (<span id="english">0</span>h)</button>
+  <button onclick="toggle('coding')">Coding (<span id="coding">0</span>h)</button>
+  <button onclick="toggle('social')">Social (<span id="social">0</span>h)</button>
+  <button onclick="toggle('music')">Music (<span id="music">0</span>h)</button>
+  <button onclick="toggle('chores')">Chores (<span id="chores">0</span>h)</button>
 </div>
 
 <h3>Total Hours: <span id="total">0</span></h3>
-<h3>Progress %: <span id="percent">0</span>%</h3>
+<h3>Progress: <span id="percent">0</span></h3>
 
 <label>Notes</label>
-<textarea id="notes" oninput="saveDay()"></textarea>
+<textarea id="notes"></textarea>
+
+<br><br>
+<button onclick="saveDay()">💾 Save</button>
 
 <script>
 let data = {
@@ -55,14 +58,25 @@ let data = {
   coding:0, social:0, music:0, chores:0
 };
 
-// Add 0.5 hr per click
-function add(type){
-  data[type] += 0.5;
+// Default today's date
+window.onload = function() {
+  let today = new Date().toISOString().split('T')[0];
+  document.getElementById("date").value = today;
+  loadDay();
+};
+
+// Toggle add/remove 0.5
+function toggle(type){
+  if(data[type] > 0){
+    data[type] -= 0.5;
+  } else {
+    data[type] += 0.5;
+  }
   document.getElementById(type).innerText = data[type];
   update();
 }
 
-// Update totals + save
+// Update totals
 function update(){
   let activityTotal = Object.values(data).reduce((a,b)=>a+b,0);
 
@@ -74,11 +88,9 @@ function update(){
 
   let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
   document.getElementById("percent").innerText = percent;
-
-  saveDay();
 }
 
-// SAVE current day
+// Save
 function saveDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
@@ -92,9 +104,10 @@ function saveDay(){
   };
 
   localStorage.setItem("tracker-" + date, JSON.stringify(entry));
+  alert("Saved!");
 }
 
-// LOAD selected day
+// Load
 function loadDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
@@ -103,7 +116,6 @@ function loadDay(){
 
   if(saved){
     let entry = JSON.parse(saved);
-
     data = entry.data || data;
 
     for(let key in data){
@@ -115,7 +127,6 @@ function loadDay(){
     document.getElementById("assignment").value = entry.assignment || 0;
     document.getElementById("notes").value = entry.notes || "";
   } else {
-    // reset if no data
     data = { math:0, science:0, english:0, coding:0, social:0, music:0, chores:0 };
     for(let key in data){
       document.getElementById(key).innerText = 0;
