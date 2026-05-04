@@ -6,40 +6,27 @@
   <style>
     body { font-family: Arial; padding: 15px; }
 
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
+    .form-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     label {
-      font-size: 14px;
       font-weight: 500;
+      font-size: 14px;
     }
 
-    input[type="radio"] {
-      margin-right: 6px;
-    }
-
-    .row {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .col {
-      flex: 1;
-      min-width: 140px;
+    input, textarea {
+      width: 100%;
+      padding: 8px;
     }
 
     .radio-group {
-      margin-top: 10px;
-    }
-
-    .radio-options {
       display: flex;
       gap: 20px;
-      margin-top: 5px;
     }
 
     .grid {
@@ -59,32 +46,31 @@
 
 <h2>📅 Daily Tracker</h2>
 
-<!-- Date + Planned -->
-<div class="row">
-  <div class="col">
-    <label>Date</label>
-    <input type="date" id="date" onchange="loadDay()">
-  </div>
+<!-- Date -->
+<div class="form-row">
+  <label>Date</label>
+  <input type="date" id="date" onchange="loadDay()">
+</div>
 
-  <div class="col">
-    <label>Planned Hours</label>
-    <input type="number" id="planned" value="3" oninput="update()">
-  </div>
+<!-- Planned -->
+<div class="form-row">
+  <label>Planned Hours</label>
+  <input type="number" id="planned" value="3" oninput="update()">
 </div>
 
 <!-- School -->
-<div class="radio-group">
-  <label><strong>Attended School</strong></label>
-  <div class="radio-options">
+<div class="form-row">
+  <label>Attended School</label>
+  <div class="radio-group">
     <label><input type="radio" name="school" value="1" onchange="update()"> Yes</label>
     <label><input type="radio" name="school" value="0" checked onchange="update()"> No</label>
   </div>
 </div>
 
 <!-- Assignment -->
-<div class="radio-group">
-  <label><strong>School Assignment Completed</strong></label>
-  <div class="radio-options">
+<div class="form-row">
+  <label>School Assignment</label>
+  <div class="radio-group">
     <label><input type="radio" name="assignment" value="1" onchange="update()"> Yes</label>
     <label><input type="radio" name="assignment" value="0" checked onchange="update()"> No</label>
   </div>
@@ -106,10 +92,13 @@
 <h3>Total Hours: <span id="total">0</span></h3>
 <h3>Progress: <span id="percent">0</span>%</h3>
 
-<label>Notes</label>
-<textarea id="notes"></textarea>
+<!-- Notes -->
+<div class="form-row">
+  <label>Notes</label>
+  <textarea id="notes"></textarea>
+</div>
 
-<br><br>
+<br>
 <button onclick="saveDay()">✅ Submit</button>
 
 <script>
@@ -151,7 +140,6 @@ function endPress(type){
   }
 }
 
-// Update UI + calculations
 function updateUI(type){
   if(data[type] < 0) data[type] = 0;
   document.getElementById(type).innerText = data[type];
@@ -195,7 +183,7 @@ function saveDay(){
   alert("Submitted!");
 }
 
-// Lock form
+// Lock UI
 function lockForm(){
   document.querySelectorAll("input, textarea").forEach(el => el.disabled = true);
 
@@ -213,7 +201,7 @@ function lockForm(){
   document.body.appendChild(msg);
 }
 
-// Load saved data
+// Load saved day
 function loadDay(){
   let date = document.getElementById("date").value;
   if(!date) return;
