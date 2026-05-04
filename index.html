@@ -15,7 +15,7 @@
 <h2>📅 Daily Tracker</h2>
 
 <label>Date</label>
-<input type="date" id="date">
+<input type="date" id="date" onchange="loadDay()">
 
 <label>Planned Hours</label>
 <input type="number" id="planned" value="3" oninput="update()">
@@ -47,10 +47,9 @@
 <h3>Progress %: <span id="percent">0</span>%</h3>
 
 <label>Notes</label>
-<textarea id="notes"></textarea>
+<textarea id="notes" oninput="saveDay()"></textarea>
 
 <script>
-// Store activity hours
 let data = {
   math:0, science:0, english:0,
   coding:0, social:0, music:0, chores:0
@@ -63,20 +62,71 @@ function add(type){
   update();
 }
 
-// Update totals and %
+// Update totals + save
 function update(){
   let activityTotal = Object.values(data).reduce((a,b)=>a+b,0);
 
   let school = parseInt(document.getElementById("school").value);
   let planned = document.getElementById("planned").value || 3;
 
-  // School = 2 hours
   let total = activityTotal + (school * 2);
-
   document.getElementById("total").innerText = total;
 
   let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
   document.getElementById("percent").innerText = percent;
+
+  saveDay();
+}
+
+// SAVE current day
+function saveDay(){
+  let date = document.getElementById("date").value;
+  if(!date) return;
+
+  let entry = {
+    data: data,
+    planned: document.getElementById("planned").value,
+    school: document.getElementById("school").value,
+    assignment: document.getElementById("assignment").value,
+    notes: document.getElementById("notes").value
+  };
+
+  localStorage.setItem("tracker-" + date, JSON.stringify(entry));
+}
+
+// LOAD selected day
+function loadDay(){
+  let date = document.getElementById("date").value;
+  if(!date) return;
+
+  let saved = localStorage.getItem("tracker-" + date);
+
+  if(saved){
+    let entry = JSON.parse(saved);
+
+    data = entry.data || data;
+
+    for(let key in data){
+      document.getElementById(key).innerText = data[key];
+    }
+
+    document.getElementById("planned").value = entry.planned || 3;
+    document.getElementById("school").value = entry.school || 0;
+    document.getElementById("assignment").value = entry.assignment || 0;
+    document.getElementById("notes").value = entry.notes || "";
+  } else {
+    // reset if no data
+    data = { math:0, science:0, english:0, coding:0, social:0, music:0, chores:0 };
+    for(let key in data){
+      document.getElementById(key).innerText = 0;
+    }
+    document.getElementById("planned").value = 3;
+    document.getElementById("school").value = 0;
+    document.getElementById("assignment").value = 0;
+    document.getElementById("notes").value = "";
+  }
+
+  update();
 }
 </script>
 
