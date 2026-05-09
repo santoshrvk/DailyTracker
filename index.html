@@ -3,190 +3,302 @@
 <html>
 <head>
   <title>Family Daily Tracker</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Heatmap CSS -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css">
+
   <style>
-    body {
+
+    body{
       font-family: Arial;
-      padding: 15px;
-      max-width: 700px;
-      margin: auto;
-      background: #f5f7fb;
+      padding:15px;
+      max-width:900px;
+      margin:auto;
+      background:#f5f7fb;
     }
 
-    h2, h3 {
-      text-align: center;
+    h2,h3{
+      text-align:center;
     }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 160px 1fr;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
+    .card{
+      background:white;
+      padding:15px;
+      border-radius:12px;
+      margin-top:15px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
     }
 
-    label {
-      font-weight: 600;
+    .form-row{
+      display:grid;
+      grid-template-columns:160px 1fr;
+      gap:10px;
+      align-items:center;
+      margin-bottom:12px;
     }
 
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
+    input, textarea, select{
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
     }
 
-    .radio-group {
-      display: flex;
-      gap: 20px;
+    .radio-group{
+      display:flex;
+      gap:20px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-top: 10px;
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:10px;
     }
 
-    button {
-      padding: 14px;
-      font-size: 15px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #4a6cf7;
-      color: white;
-      transition: 0.2s;
+    button{
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:15px;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .main-btn{
+      background:#4a6cf7;
+      color:white;
     }
 
-    .activity-btn {
-      background: white;
-      color: black;
-      border: 1px solid #ddd;
+    .activity-btn{
+      background:white;
+      border:1px solid #ddd;
     }
 
-    .progress-container {
-      background: #ddd;
-      border-radius: 20px;
-      height: 22px;
-      overflow: hidden;
-      margin-top: 10px;
+    .progress-container{
+      background:#ddd;
+      border-radius:20px;
+      height:22px;
+      overflow:hidden;
+      margin-top:10px;
     }
 
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: green;
-      transition: width 0.3s;
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:green;
+      transition:0.3s;
     }
 
-    .summary-box {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    .dashboard-card{
+      background:#f9f9f9;
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:10px;
     }
 
-    .streak {
-      font-size: 18px;
-      text-align: center;
-      margin-top: 10px;
+    .note{
+      font-size:12px;
+      color:gray;
+      text-align:center;
     }
 
-    .note {
-      font-size: 12px;
-      text-align: center;
-      color: gray;
-    }
   </style>
 </head>
 
 <body>
 
-<h2>📅 Family Daily Tracker</h2>
+<!-- LOGIN SCREEN -->
 
-<div class="form-row">
-  <label>User</label>
-  <select id="user" onchange="loadDay()">
-    <option value="Satvik">🦁 Satvik</option>
-    <option value="Samyak">🦄 Samyak</option>
-    <option value="Santosh">👨 Santosh</option>
-    <option value="Shweta">👩 Shweta</option>
-  </select>
-</div>
+<div id="loginScreen" class="card">
 
-<div class="form-row">
-  <label>Date</label>
-  <input type="date" id="date" onchange="loadDay()">
-</div>
+  <h2>🔐 Family Login</h2>
 
-<div class="form-row">
-  <label>Planned Hours</label>
-  <input type="number" id="planned" value="3" oninput="update()">
-</div>
+  <div class="form-row">
+    <label>User</label>
 
-<div class="form-row">
-  <label>Attended School</label>
-  <div class="radio-group">
-    <label><input type="radio" name="school" value="1" onchange="update()"> Yes</label>
-    <label><input type="radio" name="school" value="0" checked onchange="update()"> No</label>
-  </div>
-</div>
-
-<div class="form-row">
-  <label>School Assignment</label>
-  <div class="radio-group">
-    <label><input type="radio" name="assignment" value="1" onchange="update()"> Yes</label>
-    <label><input type="radio" name="assignment" value="0" checked onchange="update()"> No</label>
-  </div>
-</div>
-
-<h3>📚 Activities</h3>
-<p class="note">Tap = +0.5h | Hold = -0.5h</p>
-
-<div class="grid" id="activityGrid"></div>
-
-<div class="summary-box">
-
-  <h3>Total Hours: <span id="total">0</span></h3>
-
-  <h3>
-    Progress:
-    <span id="percent">0</span>%
-  </h3>
-
-  <div class="progress-container">
-    <div class="progress-bar" id="bar"></div>
+    <select id="loginUser">
+      <option value="Satvik">🦁 Satvik</option>
+      <option value="Samyak">🦄 Samyak</option>
+      <option value="Santosh">👨 Santosh</option>
+      <option value="Shweta">👩 Shweta</option>
+    </select>
   </div>
 
-  <div class="streak">
-    🔥 Current Streak:
-    <span id="streak">0</span> days
+  <div class="form-row">
+    <label>PIN</label>
+    <input type="password" id="pin" maxlength="4">
+  </div>
+
+  <button class="main-btn" onclick="login()" style="width:100%;">
+    Login
+  </button>
+
+</div>
+
+<!-- MAIN APP -->
+
+<div id="app" style="display:none;">
+
+  <h2>📅 Family Daily Tracker</h2>
+
+  <div class="card">
+
+    <div class="form-row">
+      <label>User</label>
+
+      <select id="user" onchange="loadDay()">
+        <option value="Satvik">🦁 Satvik</option>
+        <option value="Samyak">🦄 Samyak</option>
+        <option value="Santosh">👨 Santosh</option>
+        <option value="Shweta">👩 Shweta</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Date</label>
+      <input type="date" id="date" onchange="loadDay()">
+    </div>
+
+    <div class="form-row">
+      <label>Planned Hours</label>
+      <input type="number" id="planned" value="3" oninput="update()">
+    </div>
+
+    <div class="form-row">
+      <label>Attended School</label>
+
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="school" value="1" onchange="update()">
+          Yes
+        </label>
+
+        <label>
+          <input type="radio" name="school" value="0" checked onchange="update()">
+          No
+        </label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>School Assignment</label>
+
+      <div class="radio-group">
+
+        <label>
+          <input type="radio" name="assignment" value="1">
+          Yes
+        </label>
+
+        <label>
+          <input type="radio" name="assignment" value="0" checked>
+          No
+        </label>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>📚 Activities</h3>
+
+    <p class="note">
+      Tap = +0.5h | Hold = -0.5h
+    </p>
+
+    <div class="grid" id="activityGrid"></div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>
+      Total Hours:
+      <span id="total">0</span>
+    </h3>
+
+    <h3>
+      Progress:
+      <span id="percent">0</span>%
+    </h3>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="bar"></div>
+    </div>
+
+    <h3>
+      🔥 Current Streak:
+      <span id="streak">0</span> days
+    </h3>
+
+  </div>
+
+  <div class="card">
+
+    <h3>📈 Consistency Heatmap</h3>
+
+    <div id="heatmap"></div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="form-row">
+      <label>Notes</label>
+
+      <textarea id="notes" rows="4"></textarea>
+    </div>
+
+    <button class="main-btn"
+      onclick="saveDay()"
+      style="width:100%;">
+
+      ✅ Submit
+
+    </button>
+
+  </div>
+
+  <!-- PARENT DASHBOARD -->
+
+  <div class="card">
+
+    <h2>👨‍👩‍👧‍👦 Parent Dashboard</h2>
+
+    <div id="dashboard"></div>
+
   </div>
 
 </div>
 
-<div class="form-row" style="margin-top:20px;">
-  <label>Notes</label>
-  <textarea id="notes" rows="4"></textarea>
-</div>
+<!-- HEATMAP SCRIPT -->
 
-<br>
-
-<button onclick="saveDay()" style="width:100%;">
-  ✅ Submit
-</button>
+<script src="https://cdn.jsdelivr.net/npm/cal-heatmap/dist/cal-heatmap.min.js"></script>
 
 <script>
 
-const WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL";
+const WEB_APP_URL =
+  "YOUR_GOOGLE_APPS_SCRIPT_URL";
+
+const userPins = {
+  Satvik:"1111",
+  Samyak:"2222",
+  Santosh:"3333",
+  Shweta:"4444"
+};
+
+const users = [
+  "Satvik",
+  "Samyak",
+  "Santosh",
+  "Shweta"
+];
 
 const activities = [
   "math",
@@ -208,21 +320,63 @@ activities.forEach(a => data[a] = 0);
 let pressTimer;
 let isLongPress = false;
 
-window.onload = function () {
+window.onload = function(){
 
-  let today = new Date().toISOString().split('T')[0];
-  document.getElementById("date").value = today;
+  let today =
+    new Date().toISOString().split('T')[0];
+
+  document.getElementById("date").value =
+    today;
 
   renderButtons();
 
-  loadDay();
+  const loggedInUser =
+    localStorage.getItem("loggedInUser");
 
-  update();
+  if(loggedInUser){
+
+    document.getElementById("loginScreen").style.display = "none";
+
+    document.getElementById("app").style.display = "block";
+
+    document.getElementById("user").value =
+      loggedInUser;
+
+    loadDay();
+  }
 };
 
-function renderButtons() {
+function login(){
 
-  const grid = document.getElementById("activityGrid");
+  const user =
+    document.getElementById("loginUser").value;
+
+  const pin =
+    document.getElementById("pin").value;
+
+  if(userPins[user] === pin){
+
+    localStorage.setItem("loggedInUser", user);
+
+    document.getElementById("loginScreen").style.display = "none";
+
+    document.getElementById("app").style.display = "block";
+
+    document.getElementById("user").value = user;
+
+    loadDay();
+
+  } else {
+
+    alert("Invalid PIN");
+
+  }
+}
+
+function renderButtons(){
+
+  const grid =
+    document.getElementById("activityGrid");
 
   grid.innerHTML = "";
 
@@ -238,16 +392,17 @@ function renderButtons() {
         onmousedown="startPress('${activity}')"
         onmouseup="endPress('${activity}')"
         ontouchstart="startPress('${activity}')"
-        ontouchend="endPress('${activity}')"
-      >
+        ontouchend="endPress('${activity}')">
+
         ${pretty}
         (<span id="${activity}">0</span>h)
+
       </button>
     `;
   });
 }
 
-function startPress(type) {
+function startPress(type){
 
   isLongPress = false;
 
@@ -255,25 +410,30 @@ function startPress(type) {
 
     isLongPress = true;
 
-    if (data[type] > 0) {
+    if(data[type] > 0){
+
       data[type] -= 0.5;
+
       updateUI(type);
+
     }
 
   }, 400);
 }
 
-function endPress(type) {
+function endPress(type){
 
   clearTimeout(pressTimer);
 
-  if (!isLongPress) {
+  if(!isLongPress){
+
     data[type] += 0.5;
+
     updateUI(type);
   }
 }
 
-function updateUI(type) {
+function updateUI(type){
 
   document.getElementById(type).innerText =
     data[type];
@@ -281,10 +441,10 @@ function updateUI(type) {
   update();
 }
 
-function update() {
+function update(){
 
   let totalActivities =
-    Object.values(data).reduce((a, b) => a + b, 0);
+    Object.values(data).reduce((a,b)=>a+b,0);
 
   let school =
     parseInt(
@@ -298,7 +458,8 @@ function update() {
       document.getElementById("planned").value
     ) || 3;
 
-  let total = totalActivities + (school * 2);
+  let total =
+    totalActivities + (school * 2);
 
   document.getElementById("total").innerText =
     total.toFixed(1);
@@ -311,22 +472,27 @@ function update() {
   document.getElementById("percent").innerText =
     percent;
 
-  let bar = document.getElementById("bar");
+  let bar =
+    document.getElementById("bar");
 
-  bar.style.width = Math.min(percent, 100) + "%";
+  bar.style.width =
+    Math.min(percent,100) + "%";
 
-  if (percent >= 100) {
+  if(percent >= 100){
+
     bar.style.background = "green";
-  }
-  else if (percent >= 70) {
+
+  } else if(percent >= 70){
+
     bar.style.background = "orange";
-  }
-  else {
+
+  } else {
+
     bar.style.background = "red";
   }
 }
 
-function getStorageKey() {
+function getStorageKey(){
 
   const user =
     document.getElementById("user").value;
@@ -337,12 +503,54 @@ function getStorageKey() {
   return `${user}_${date}`;
 }
 
-function saveDay() {
+function calculateStreak(user){
+
+  let streak = 0;
+
+  let currentDate = new Date();
+
+  while(true){
+
+    let dateStr =
+      currentDate.toISOString().split('T')[0];
+
+    let key =
+      `${user}_${dateStr}`;
+
+    let saved =
+      localStorage.getItem(key);
+
+    if(saved){
+
+      let payload =
+        JSON.parse(saved);
+
+      if(Number(payload.percent) >= 100){
+
+        streak++;
+
+        currentDate.setDate(
+          currentDate.getDate() - 1
+        );
+
+      } else {
+        break;
+      }
+
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function saveDay(){
 
   let date =
     document.getElementById("date").value;
 
-  if (!date)
+  if(!date)
     return alert("Select date");
 
   let user =
@@ -361,7 +569,7 @@ function saveDay() {
     ) || 3;
 
   let totalActivities =
-    Object.values(data).reduce((a, b) => a + b, 0);
+    Object.values(data).reduce((a,b)=>a+b,0);
 
   let total =
     totalActivities + (school * 2);
@@ -371,35 +579,23 @@ function saveDay() {
       ? (total / planned * 100).toFixed(0)
       : 0;
 
-  let streakKey = `streak_${user}`;
-
-  let streak =
-    parseInt(localStorage.getItem(streakKey) || 0);
-
-  if (percent >= 100) {
-    streak++;
-  } else {
-    streak = 0;
-  }
-
-  localStorage.setItem(streakKey, streak);
-
-  document.getElementById("streak").innerText =
-    streak;
-
   let payload = {
+
     user,
     date,
     planned,
     school,
+
     assignment:
       document.querySelector(
         'input[name="assignment"]:checked'
       ).value,
+
     ...data,
+
     total,
     percent,
-    streak,
+
     notes:
       document.getElementById("notes").value
   };
@@ -409,20 +605,33 @@ function saveDay() {
     JSON.stringify(payload)
   );
 
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(payload)
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    mode:"no-cors",
+    body:JSON.stringify(payload)
   });
 
-  if (percent >= 100) {
+  let streak =
+    calculateStreak(user);
+
+  document.getElementById("streak").innerText =
+    streak;
+
+  renderHeatmap(user);
+
+  renderDashboard();
+
+  if(percent >= 100){
+
     alert(`🔥 Great job ${user}! Goal achieved!`);
+
   } else {
+
     alert(`✅ Saved for ${user}`);
   }
 }
 
-function loadDay() {
+function loadDay(){
 
   activities.forEach(a => {
     data[a] = 0;
@@ -431,9 +640,10 @@ function loadDay() {
   const saved =
     localStorage.getItem(getStorageKey());
 
-  if (saved) {
+  if(saved){
 
-    const payload = JSON.parse(saved);
+    const payload =
+      JSON.parse(saved);
 
     document.getElementById("planned").value =
       payload.planned || 3;
@@ -460,7 +670,9 @@ function loadDay() {
   } else {
 
     activities.forEach(a => {
+
       document.getElementById(a).innerText = 0;
+
     });
 
     document.getElementById("notes").value = "";
@@ -470,14 +682,124 @@ function loadDay() {
     document.getElementById("user").value;
 
   let streak =
-    parseInt(
-      localStorage.getItem(`streak_${user}`) || 0
-    );
+    calculateStreak(user);
 
   document.getElementById("streak").innerText =
     streak;
 
   update();
+
+  renderHeatmap(user);
+
+  renderDashboard();
+}
+
+function renderHeatmap(user){
+
+  let dataset = {};
+
+  for(let key in localStorage){
+
+    if(key.startsWith(user + "_")){
+
+      let payload =
+        JSON.parse(localStorage.getItem(key));
+
+      dataset[payload.date] =
+        Number(payload.percent);
+    }
+  }
+
+  document.getElementById("heatmap").innerHTML = "";
+
+  const cal = new CalHeatmap();
+
+  cal.paint({
+
+    itemSelector:"#heatmap",
+
+    domain:{
+      type:"month"
+    },
+
+    subDomain:{
+      type:"day",
+      radius:2
+    },
+
+    data:{
+      source:
+        Object.entries(dataset).map(([date,value]) => ({
+          date,
+          value
+        })),
+
+      x:"date",
+      y:"value"
+    },
+
+    scale:{
+      color:{
+        type:"threshold",
+
+        range:[
+          "#ffcccc",
+          "#ffe680",
+          "#8fd19e"
+        ],
+
+        domain:[50,80]
+      }
+    }
+  });
+}
+
+function renderDashboard(){
+
+  let html = "";
+
+  users.forEach(user => {
+
+    let totalHours = 0;
+
+    let completedDays = 0;
+
+    for(let key in localStorage){
+
+      if(key.startsWith(user + "_")){
+
+        let payload =
+          JSON.parse(localStorage.getItem(key));
+
+        totalHours += Number(payload.total);
+
+        if(Number(payload.percent) >= 100){
+
+          completedDays++;
+        }
+      }
+    }
+
+    let streak =
+      calculateStreak(user);
+
+    html += `
+      <div class="dashboard-card">
+
+        <h3>${user}</h3>
+
+        <p>🔥 Streak: ${streak}</p>
+
+        <p>⏱ Total Hours: ${totalHours.toFixed(1)}</p>
+
+        <p>✅ Goal Days: ${completedDays}</p>
+
+      </div>
+    `;
+  });
+
+  document.getElementById("dashboard").innerHTML =
+    html;
 }
 
 </script>
