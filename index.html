@@ -1,24 +1,41 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Daily Tracker</title>
+  <title>Family Daily Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    body { font-family: Arial; padding: 15px; }
+    body {
+      font-family: Arial;
+      padding: 15px;
+      max-width: 700px;
+      margin: auto;
+      background: #f5f7fb;
+    }
+
+    h2, h3 {
+      text-align: center;
+    }
 
     .form-row {
       display: grid;
-      grid-template-columns: 150px 1fr;
+      grid-template-columns: 160px 1fr;
       align-items: center;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    label { font-weight: 500; }
+    label {
+      font-weight: 600;
+    }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
     }
 
     .radio-group {
@@ -28,20 +45,82 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
       margin-top: 10px;
     }
 
     button {
-      padding: 12px;
-      font-size: 14px;
+      padding: 14px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #4a6cf7;
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .activity-btn {
+      background: white;
+      color: black;
+      border: 1px solid #ddd;
+    }
+
+    .progress-container {
+      background: #ddd;
+      border-radius: 20px;
+      height: 22px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: green;
+      transition: width 0.3s;
+    }
+
+    .summary-box {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .streak {
+      font-size: 18px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .note {
+      font-size: 12px;
+      text-align: center;
+      color: gray;
     }
   </style>
 </head>
+
 <body>
 
-<h2>📅 Daily Tracker</h2>
+<h2>📅 Family Daily Tracker</h2>
+
+<div class="form-row">
+  <label>User</label>
+  <select id="user" onchange="loadDay()">
+    <option value="Satvik">🦁 Satvik</option>
+    <option value="Samyak">🦄 Samyak</option>
+    <option value="Santosh">👨 Santosh</option>
+    <option value="Shweta">👩 Shweta</option>
+  </select>
+</div>
 
 <div class="form-row">
   <label>Date</label>
@@ -70,109 +149,265 @@
 </div>
 
 <h3>📚 Activities</h3>
-<p style="font-size:12px;">Tap = +0.5h | Hold = -0.5h</p>
+<p class="note">Tap = +0.5h | Hold = -0.5h</p>
 
-<div class="grid">
-  <button onmousedown="startPress('math')" onmouseup="endPress('math')">Math (<span id="math">0</span>h)</button>
-  <button onmousedown="startPress('science')" onmouseup="endPress('science')">Science (<span id="science">0</span>h)</button>
-  <button onmousedown="startPress('english')" onmouseup="endPress('english')">English (<span id="english">0</span>h)</button>
-  <button onmousedown="startPress('coding')" onmouseup="endPress('coding')">Coding (<span id="coding">0</span>h)</button>
-  <button onmousedown="startPress('social')" onmouseup="endPress('social')">Social (<span id="social">0</span>h)</button>
-  <button onmousedown="startPress('music')" onmouseup="endPress('music')">Music (<span id="music">0</span>h)</button>
-  <button onmousedown="startPress('chores')" onmouseup="endPress('chores')">Chores (<span id="chores">0</span>h)</button>
+<div class="grid" id="activityGrid"></div>
+
+<div class="summary-box">
+
+  <h3>Total Hours: <span id="total">0</span></h3>
+
+  <h3>
+    Progress:
+    <span id="percent">0</span>%
+  </h3>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="bar"></div>
+  </div>
+
+  <div class="streak">
+    🔥 Current Streak:
+    <span id="streak">0</span> days
+  </div>
+
 </div>
 
-<h3>Total Hours: <span id="total">0</span></h3>
-<h3>Progress: <span id="percent">0</span>%</h3>
-
-<div class="form-row">
+<div class="form-row" style="margin-top:20px;">
   <label>Notes</label>
-  <textarea id="notes"></textarea>
+  <textarea id="notes" rows="4"></textarea>
 </div>
 
 <br>
-<button onclick="saveDay()">✅ Submit</button>
+
+<button onclick="saveDay()" style="width:100%;">
+  ✅ Submit
+</button>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWTMzdilOwAxhOSQxCA0HxOAw1jXyA0ZPEs0Wr275Z5zTJ4ejnuzIlEccjFwJaHa6r1g/exec";
 
-let data = {
-  math:0, science:0, english:0,
-  coding:0, social:0, music:0, chores:0
-};
+const WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL";
+
+const activities = [
+  "math",
+  "science",
+  "english",
+  "coding",
+  "social",
+  "music",
+  "chores",
+  "reading",
+  "exercise",
+  "piano"
+];
+
+let data = {};
+
+activities.forEach(a => data[a] = 0);
 
 let pressTimer;
 let isLongPress = false;
 
-// default today
-window.onload = function() {
+window.onload = function () {
+
   let today = new Date().toISOString().split('T')[0];
   document.getElementById("date").value = today;
+
+  renderButtons();
+
+  loadDay();
+
+  update();
 };
 
-// long press = subtract
-function startPress(type){
+function renderButtons() {
+
+  const grid = document.getElementById("activityGrid");
+
+  grid.innerHTML = "";
+
+  activities.forEach(activity => {
+
+    const pretty =
+      activity.charAt(0).toUpperCase() +
+      activity.slice(1);
+
+    grid.innerHTML += `
+      <button
+        class="activity-btn"
+        onmousedown="startPress('${activity}')"
+        onmouseup="endPress('${activity}')"
+        ontouchstart="startPress('${activity}')"
+        ontouchend="endPress('${activity}')"
+      >
+        ${pretty}
+        (<span id="${activity}">0</span>h)
+      </button>
+    `;
+  });
+}
+
+function startPress(type) {
+
   isLongPress = false;
+
   pressTimer = setTimeout(() => {
+
     isLongPress = true;
-    if(data[type] > 0){
+
+    if (data[type] > 0) {
       data[type] -= 0.5;
       updateUI(type);
     }
+
   }, 400);
 }
 
-// click = add
-function endPress(type){
+function endPress(type) {
+
   clearTimeout(pressTimer);
-  if(!isLongPress){
+
+  if (!isLongPress) {
     data[type] += 0.5;
     updateUI(type);
   }
 }
 
-function updateUI(type){
-  document.getElementById(type).innerText = data[type];
+function updateUI(type) {
+
+  document.getElementById(type).innerText =
+    data[type];
+
   update();
 }
 
-// calculate totals
-function update(){
-  let totalActivities = Object.values(data).reduce((a,b)=>a+b,0);
+function update() {
 
-  let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
-  let planned = parseFloat(document.getElementById("planned").value) || 3;
+  let totalActivities =
+    Object.values(data).reduce((a, b) => a + b, 0);
+
+  let school =
+    parseInt(
+      document.querySelector(
+        'input[name="school"]:checked'
+      ).value || 0
+    );
+
+  let planned =
+    parseFloat(
+      document.getElementById("planned").value
+    ) || 3;
 
   let total = totalActivities + (school * 2);
 
-  document.getElementById("total").innerText = total.toFixed(1);
+  document.getElementById("total").innerText =
+    total.toFixed(1);
 
-  let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
-  document.getElementById("percent").innerText = percent;
+  let percent =
+    planned > 0
+      ? (total / planned * 100).toFixed(0)
+      : 0;
+
+  document.getElementById("percent").innerText =
+    percent;
+
+  let bar = document.getElementById("bar");
+
+  bar.style.width = Math.min(percent, 100) + "%";
+
+  if (percent >= 100) {
+    bar.style.background = "green";
+  }
+  else if (percent >= 70) {
+    bar.style.background = "orange";
+  }
+  else {
+    bar.style.background = "red";
+  }
 }
 
-// submit to Google Sheets
-function saveDay(){
-  let date = document.getElementById("date").value;
-  if(!date) return alert("Select date");
+function getStorageKey() {
 
-  let school = parseInt(document.querySelector('input[name="school"]:checked').value || 0);
-  let planned = parseFloat(document.getElementById("planned").value) || 3;
+  const user =
+    document.getElementById("user").value;
 
-  let totalActivities = Object.values(data).reduce((a,b)=>a+b,0);
-  let total = totalActivities + (school * 2);
-  let percent = planned > 0 ? (total / planned * 100).toFixed(0) : 0;
+  const date =
+    document.getElementById("date").value;
+
+  return `${user}_${date}`;
+}
+
+function saveDay() {
+
+  let date =
+    document.getElementById("date").value;
+
+  if (!date)
+    return alert("Select date");
+
+  let user =
+    document.getElementById("user").value;
+
+  let school =
+    parseInt(
+      document.querySelector(
+        'input[name="school"]:checked'
+      ).value || 0
+    );
+
+  let planned =
+    parseFloat(
+      document.getElementById("planned").value
+    ) || 3;
+
+  let totalActivities =
+    Object.values(data).reduce((a, b) => a + b, 0);
+
+  let total =
+    totalActivities + (school * 2);
+
+  let percent =
+    planned > 0
+      ? (total / planned * 100).toFixed(0)
+      : 0;
+
+  let streakKey = `streak_${user}`;
+
+  let streak =
+    parseInt(localStorage.getItem(streakKey) || 0);
+
+  if (percent >= 100) {
+    streak++;
+  } else {
+    streak = 0;
+  }
+
+  localStorage.setItem(streakKey, streak);
+
+  document.getElementById("streak").innerText =
+    streak;
 
   let payload = {
+    user,
     date,
     planned,
     school,
-    assignment: document.querySelector('input[name="assignment"]:checked').value,
+    assignment:
+      document.querySelector(
+        'input[name="assignment"]:checked'
+      ).value,
     ...data,
     total,
     percent,
-    notes: document.getElementById("notes").value
+    streak,
+    notes:
+      document.getElementById("notes").value
   };
+
+  localStorage.setItem(
+    getStorageKey(),
+    JSON.stringify(payload)
+  );
 
   fetch(WEB_APP_URL, {
     method: "POST",
@@ -180,17 +415,73 @@ function saveDay(){
     body: JSON.stringify(payload)
   });
 
-  alert("Submitted to Google Sheets!");
-  lockForm();
+  if (percent >= 100) {
+    alert(`🔥 Great job ${user}! Goal achieved!`);
+  } else {
+    alert(`✅ Saved for ${user}`);
+  }
 }
 
-// lock UI
-function lockForm(){
-  document.querySelectorAll("input, textarea").forEach(el => el.disabled = true);
-  document.querySelectorAll("button").forEach(btn => btn.disabled = true);
-  document.body.style.opacity = "0.6";
+function loadDay() {
+
+  activities.forEach(a => {
+    data[a] = 0;
+  });
+
+  const saved =
+    localStorage.getItem(getStorageKey());
+
+  if (saved) {
+
+    const payload = JSON.parse(saved);
+
+    document.getElementById("planned").value =
+      payload.planned || 3;
+
+    document.querySelector(
+      `input[name="school"][value="${payload.school}"]`
+    ).checked = true;
+
+    document.querySelector(
+      `input[name="assignment"][value="${payload.assignment}"]`
+    ).checked = true;
+
+    activities.forEach(a => {
+
+      data[a] = payload[a] || 0;
+
+      document.getElementById(a).innerText =
+        data[a];
+    });
+
+    document.getElementById("notes").value =
+      payload.notes || "";
+
+  } else {
+
+    activities.forEach(a => {
+      document.getElementById(a).innerText = 0;
+    });
+
+    document.getElementById("notes").value = "";
+  }
+
+  const user =
+    document.getElementById("user").value;
+
+  let streak =
+    parseInt(
+      localStorage.getItem(`streak_${user}`) || 0
+    );
+
+  document.getElementById("streak").innerText =
+    streak;
+
+  update();
 }
+
 </script>
 
 </body>
 </html>
+```
