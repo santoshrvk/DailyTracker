@@ -1,14 +1,10 @@
-```html id="vtf91u"
+```html id="m0ck9f"
 <!DOCTYPE html>
 <html>
 <head>
   <title>Family Daily Tracker</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Heatmap CSS -->
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css">
 
   <style>
 
@@ -118,6 +114,24 @@
       background:red;
       color:white;
       padding:10px 15px;
+    }
+
+    .heatmap-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:6px;
+      margin-top:10px;
+    }
+
+    .heatmap-cell{
+      width:100%;
+      aspect-ratio:1;
+      border-radius:4px;
+      font-size:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
     }
 
     @media(max-width:600px){
@@ -385,7 +399,11 @@
 
     <h3>📈 Consistency Heatmap</h3>
 
-    <div id="heatmap"></div>
+    <div
+      class="heatmap-grid"
+      id="heatmap">
+
+    </div>
 
   </div>
 
@@ -433,16 +451,7 @@
 
 </div>
 
-<!-- HEATMAP -->
-
-<script src="https://cdn.jsdelivr.net/npm/cal-heatmap/dist/cal-heatmap.min.js"></script>
-
 <script>
-
-//
-// TEMPORARY
-// Leave blank until Apps Script works
-//
 
 const WEB_APP_URL = "";
 
@@ -858,28 +867,6 @@ async function saveDay(){
       JSON.stringify(payload)
     );
 
-    //
-    // GOOGLE SHEETS
-    //
-
-    if(
-      WEB_APP_URL &&
-      WEB_APP_URL.startsWith("https")
-    ){
-
-      await fetch(WEB_APP_URL,{
-
-        method:"POST",
-
-        headers:{
-          "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify(payload)
-
-      });
-    }
-
     let streak =
       calculateStreak(user);
 
@@ -898,7 +885,7 @@ async function saveDay(){
 
     } else {
 
-      alert(`✅ Saved for ${user}`);
+      alert(`✅ Progress saved successfully for ${user}`);
     }
 
   } catch(error){
@@ -986,7 +973,9 @@ function loadDay(){
 
 function renderHeatmap(user){
 
-  let dataset = {};
+  let html = "";
+
+  let recentDays = [];
 
   for(let key in localStorage){
 
@@ -995,55 +984,49 @@ function renderHeatmap(user){
       let payload =
         JSON.parse(localStorage.getItem(key));
 
-      dataset[payload.date] =
-        Number(payload.percent);
+      recentDays.push({
+        date: payload.date,
+        percent: Number(payload.percent || 0)
+      });
     }
   }
 
-  document.getElementById("heatmap").innerHTML =
-    "";
+  recentDays.sort((a,b) =>
+    new Date(a.date) - new Date(b.date)
+  );
 
-  const cal =
-    new CalHeatmap();
+  recentDays.slice(-35).forEach(day => {
 
-  cal.paint({
+    let color = "#ccc";
 
-    itemSelector:"#heatmap",
+    if(day.percent >= 100){
 
-    domain:{
-      type:"month"
-    },
+      color = "green";
 
-    subDomain:{
-      type:"day",
-      radius:2
-    },
+    } else if(day.percent >= 70){
 
-    data:{
-      source:
-        Object.entries(dataset).map(([date,value]) => ({
-          date,
-          value
-        })),
+      color = "orange";
 
-      x:"date",
-      y:"value"
-    },
+    } else if(day.percent > 0){
 
-    scale:{
-      color:{
-        type:"threshold",
-
-        range:[
-          "#ffcccc",
-          "#ffe680",
-          "#8fd19e"
-        ],
-
-        domain:[50,80]
-      }
+      color = "red";
     }
+
+    html += `
+
+      <div
+        class="heatmap-cell"
+        style="background:${color};">
+
+        ${new Date(day.date).getDate()}
+
+      </div>
+
+    `;
   });
+
+  document.getElementById("heatmap").innerHTML =
+    html;
 }
 
 function renderDashboard(){
