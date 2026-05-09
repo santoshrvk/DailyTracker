@@ -19,7 +19,7 @@
       background:#f5f7fb;
     }
 
-    h2,h3{
+    h2,h3,h4{
       text-align:center;
     }
 
@@ -45,6 +45,7 @@
       border-radius:8px;
       border:1px solid #ccc;
       font-size:14px;
+      box-sizing:border-box;
     }
 
     .radio-group{
@@ -96,7 +97,7 @@
       background:#f9f9f9;
       padding:12px;
       border-radius:10px;
-      margin-bottom:10px;
+      margin-bottom:15px;
     }
 
     .note{
@@ -118,12 +119,28 @@
       padding:10px 15px;
     }
 
+    @media(max-width:600px){
+
+      .form-row{
+        grid-template-columns:1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .top-bar{
+        flex-direction:column;
+        gap:10px;
+      }
+    }
+
   </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 
 <div id="loginScreen" class="card">
 
@@ -177,7 +194,7 @@
 
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 
 <div id="app" style="display:none;">
 
@@ -398,14 +415,14 @@
 
   </div>
 
-  <!-- PARENT DASHBOARD -->
+  <!-- DASHBOARD -->
 
   <div
     class="card"
-    id="parentDashboard">
+    id="dashboardSection">
 
     <h2>
-      👨‍👩‍👧‍👦 Parent Dashboard
+      📊 Dashboard
     </h2>
 
     <div id="dashboard"></div>
@@ -446,13 +463,6 @@ const usersConfig = {
   }
 
 };
-
-const users = [
-  "Satvik",
-  "Samyak",
-  "Santosh",
-  "Shweta"
-];
 
 const activities = [
   "math",
@@ -508,15 +518,9 @@ window.onload = function(){
 
       userDropdown.disabled = true;
 
-      document.getElementById("parentDashboard").style.display =
-        "none";
-
     } else {
 
       userDropdown.disabled = false;
-
-      document.getElementById("parentDashboard").style.display =
-        "block";
     }
 
     loadDay();
@@ -555,15 +559,9 @@ function login(){
 
       userDropdown.disabled = true;
 
-      document.getElementById("parentDashboard").style.display =
-        "none";
-
     } else {
 
       userDropdown.disabled = false;
-
-      document.getElementById("parentDashboard").style.display =
-        "block";
     }
 
     loadDay();
@@ -972,13 +970,41 @@ function renderHeatmap(user){
 
 function renderDashboard(){
 
+  const role =
+    localStorage.getItem("userRole");
+
+  const loggedInUser =
+    localStorage.getItem("loggedInUser");
+
+  let dashboardUsers = [];
+
+  if(role === "parent"){
+
+    dashboardUsers = [
+      "Satvik",
+      "Samyak"
+    ];
+
+  } else {
+
+    dashboardUsers = [
+      loggedInUser
+    ];
+  }
+
   let html = "";
 
-  users.forEach(user => {
+  dashboardUsers.forEach(user => {
 
     let totalHours = 0;
 
     let completedDays = 0;
+
+    let trackedDays = 0;
+
+    let totalPercent = 0;
+
+    let recentDays = [];
 
     for(let key in localStorage){
 
@@ -987,14 +1013,68 @@ function renderDashboard(){
         let payload =
           JSON.parse(localStorage.getItem(key));
 
-        totalHours += Number(payload.total);
+        trackedDays++;
+
+        totalHours += Number(payload.total || 0);
+
+        totalPercent += Number(payload.percent || 0);
 
         if(Number(payload.percent) >= 100){
 
           completedDays++;
         }
+
+        recentDays.push({
+          date: payload.date,
+          percent: Number(payload.percent || 0)
+        });
       }
     }
+
+    recentDays.sort((a,b) =>
+      new Date(b.date) - new Date(a.date)
+    );
+
+    let recentHtml = "";
+
+    recentDays.slice(0,7).forEach(day => {
+
+      let color = "red";
+
+      if(day.percent >= 100){
+        color = "green";
+      }
+      else if(day.percent >= 70){
+        color = "orange";
+      }
+
+      recentHtml += `
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          padding:4px 0;
+          border-bottom:1px solid #eee;
+        ">
+
+          <span>${day.date}</span>
+
+          <span style="
+            color:${color};
+            font-weight:bold;
+          ">
+            ${day.percent}%
+          </span>
+
+        </div>
+
+      `;
+    });
+
+    let avgPercent =
+      trackedDays > 0
+        ? (totalPercent / trackedDays).toFixed(0)
+        : 0;
 
     let streak =
       calculateStreak(user);
@@ -1003,22 +1083,40 @@ function renderDashboard(){
 
       <div class="dashboard-card">
 
-        <h3>${user}</h3>
+        <h3>
+          👤 ${user}
+        </h3>
 
         <p>
-          🔥 Streak:
-          ${streak}
+          🔥 Current Streak:
+          <b>${streak}</b>
+        </p>
+
+        <p>
+          📅 Total Tracked Days:
+          <b>${trackedDays}</b>
         </p>
 
         <p>
           ⏱ Total Hours:
-          ${totalHours.toFixed(1)}
+          <b>${totalHours.toFixed(1)}</b>
         </p>
 
         <p>
-          ✅ Goal Days:
-          ${completedDays}
+          ✅ Goal Achieved Days:
+          <b>${completedDays}</b>
         </p>
+
+        <p>
+          📊 Average Completion:
+          <b>${avgPercent}%</b>
+        </p>
+
+        <h4 style="margin-top:15px;">
+          Last 7 Days
+        </h4>
+
+        ${recentHtml || "No data yet"}
 
       </div>
 
