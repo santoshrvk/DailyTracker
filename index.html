@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -106,6 +105,19 @@
       text-align:center;
     }
 
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:15px;
+    }
+
+    .logout-btn{
+      background:red;
+      color:white;
+      padding:10px 15px;
+    }
+
   </style>
 </head>
 
@@ -118,23 +130,49 @@
   <h2>🔐 Family Login</h2>
 
   <div class="form-row">
+
     <label>User</label>
 
     <select id="loginUser">
-      <option value="Satvik">🦁 Satvik</option>
-      <option value="Samyak">🦄 Samyak</option>
-      <option value="Santosh">👨 Santosh</option>
-      <option value="Shweta">👩 Shweta</option>
+
+      <option value="Satvik">
+        🦁 Satvik
+      </option>
+
+      <option value="Samyak">
+        🦄 Samyak
+      </option>
+
+      <option value="Santosh">
+        👨 Santosh
+      </option>
+
+      <option value="Shweta">
+        👩 Shweta
+      </option>
+
     </select>
+
   </div>
 
   <div class="form-row">
+
     <label>PIN</label>
-    <input type="password" id="pin" maxlength="4">
+
+    <input
+      type="password"
+      id="pin"
+      maxlength="4">
+
   </div>
 
-  <button class="main-btn" onclick="login()" style="width:100%;">
+  <button
+    class="main-btn"
+    onclick="login()"
+    style="width:100%;">
+
     Login
+
   </button>
 
 </div>
@@ -143,66 +181,138 @@
 
 <div id="app" style="display:none;">
 
-  <h2>📅 Family Daily Tracker</h2>
+  <div class="top-bar">
+
+    <h2>
+      📅 Family Daily Tracker
+    </h2>
+
+    <button
+      class="logout-btn"
+      onclick="logout()">
+
+      Logout
+
+    </button>
+
+  </div>
+
+  <!-- TRACKER -->
 
   <div class="card">
 
     <div class="form-row">
+
       <label>User</label>
 
       <select id="user" onchange="loadDay()">
-        <option value="Satvik">🦁 Satvik</option>
-        <option value="Samyak">🦄 Samyak</option>
-        <option value="Santosh">👨 Santosh</option>
-        <option value="Shweta">👩 Shweta</option>
+
+        <option value="Satvik">
+          🦁 Satvik
+        </option>
+
+        <option value="Samyak">
+          🦄 Samyak
+        </option>
+
+        <option value="Santosh">
+          👨 Santosh
+        </option>
+
+        <option value="Shweta">
+          👩 Shweta
+        </option>
+
       </select>
+
     </div>
 
     <div class="form-row">
+
       <label>Date</label>
-      <input type="date" id="date" onchange="loadDay()">
+
+      <input
+        type="date"
+        id="date"
+        onchange="loadDay()">
+
     </div>
 
     <div class="form-row">
+
       <label>Planned Hours</label>
-      <input type="number" id="planned" value="3" oninput="update()">
+
+      <input
+        type="number"
+        id="planned"
+        value="3"
+        oninput="update()">
+
     </div>
 
     <div class="form-row">
+
       <label>Attended School</label>
 
       <div class="radio-group">
+
         <label>
-          <input type="radio" name="school" value="1" onchange="update()">
+          <input
+            type="radio"
+            name="school"
+            value="1"
+            onchange="update()">
+
           Yes
         </label>
 
         <label>
-          <input type="radio" name="school" value="0" checked onchange="update()">
+          <input
+            type="radio"
+            name="school"
+            value="0"
+            checked
+            onchange="update()">
+
           No
         </label>
+
       </div>
+
     </div>
 
     <div class="form-row">
+
       <label>School Assignment</label>
 
       <div class="radio-group">
 
         <label>
-          <input type="radio" name="assignment" value="1">
+          <input
+            type="radio"
+            name="assignment"
+            value="1">
+
           Yes
         </label>
 
         <label>
-          <input type="radio" name="assignment" value="0" checked>
+          <input
+            type="radio"
+            name="assignment"
+            value="0"
+            checked>
+
           No
         </label>
 
       </div>
+
     </div>
 
   </div>
+
+  <!-- ACTIVITIES -->
 
   <div class="card">
 
@@ -212,9 +322,15 @@
       Tap = +0.5h | Hold = -0.5h
     </p>
 
-    <div class="grid" id="activityGrid"></div>
+    <div
+      class="grid"
+      id="activityGrid">
+
+    </div>
 
   </div>
+
+  <!-- SUMMARY -->
 
   <div class="card">
 
@@ -229,7 +345,13 @@
     </h3>
 
     <div class="progress-container">
-      <div class="progress-bar" id="bar"></div>
+
+      <div
+        class="progress-bar"
+        id="bar">
+
+      </div>
+
     </div>
 
     <h3>
@@ -239,6 +361,8 @@
 
   </div>
 
+  <!-- HEATMAP -->
+
   <div class="card">
 
     <h3>📈 Consistency Heatmap</h3>
@@ -247,15 +371,24 @@
 
   </div>
 
+  <!-- NOTES -->
+
   <div class="card">
 
     <div class="form-row">
+
       <label>Notes</label>
 
-      <textarea id="notes" rows="4"></textarea>
+      <textarea
+        id="notes"
+        rows="4">
+
+      </textarea>
+
     </div>
 
-    <button class="main-btn"
+    <button
+      class="main-btn"
       onclick="saveDay()"
       style="width:100%;">
 
@@ -267,9 +400,13 @@
 
   <!-- PARENT DASHBOARD -->
 
-  <div class="card">
+  <div
+    class="card"
+    id="parentDashboard">
 
-    <h2>👨‍👩‍👧‍👦 Parent Dashboard</h2>
+    <h2>
+      👨‍👩‍👧‍👦 Parent Dashboard
+    </h2>
 
     <div id="dashboard"></div>
 
@@ -286,11 +423,28 @@
 const WEB_APP_URL =
   "YOUR_GOOGLE_APPS_SCRIPT_URL";
 
-const userPins = {
-  Satvik:"1111",
-  Samyak:"2222",
-  Santosh:"3333",
-  Shweta:"4444"
+const usersConfig = {
+
+  Satvik:{
+    pin:"1111",
+    role:"kid"
+  },
+
+  Samyak:{
+    pin:"2222",
+    role:"kid"
+  },
+
+  Santosh:{
+    pin:"3333",
+    role:"parent"
+  },
+
+  Shweta:{
+    pin:"4444",
+    role:"parent"
+  }
+
 };
 
 const users = [
@@ -333,14 +487,37 @@ window.onload = function(){
   const loggedInUser =
     localStorage.getItem("loggedInUser");
 
+  const role =
+    localStorage.getItem("userRole");
+
   if(loggedInUser){
 
-    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("loginScreen").style.display =
+      "none";
 
-    document.getElementById("app").style.display = "block";
+    document.getElementById("app").style.display =
+      "block";
 
-    document.getElementById("user").value =
+    const userDropdown =
+      document.getElementById("user");
+
+    userDropdown.value =
       loggedInUser;
+
+    if(role === "kid"){
+
+      userDropdown.disabled = true;
+
+      document.getElementById("parentDashboard").style.display =
+        "none";
+
+    } else {
+
+      userDropdown.disabled = false;
+
+      document.getElementById("parentDashboard").style.display =
+        "block";
+    }
 
     loadDay();
   }
@@ -354,23 +531,56 @@ function login(){
   const pin =
     document.getElementById("pin").value;
 
-  if(userPins[user] === pin){
+  const config =
+    usersConfig[user];
+
+  if(config.pin === pin){
 
     localStorage.setItem("loggedInUser", user);
 
-    document.getElementById("loginScreen").style.display = "none";
+    localStorage.setItem("userRole", config.role);
 
-    document.getElementById("app").style.display = "block";
+    document.getElementById("loginScreen").style.display =
+      "none";
 
-    document.getElementById("user").value = user;
+    document.getElementById("app").style.display =
+      "block";
+
+    const userDropdown =
+      document.getElementById("user");
+
+    userDropdown.value = user;
+
+    if(config.role === "kid"){
+
+      userDropdown.disabled = true;
+
+      document.getElementById("parentDashboard").style.display =
+        "none";
+
+    } else {
+
+      userDropdown.disabled = false;
+
+      document.getElementById("parentDashboard").style.display =
+        "block";
+    }
 
     loadDay();
 
   } else {
 
     alert("Invalid PIN");
-
   }
+}
+
+function logout(){
+
+  localStorage.removeItem("loggedInUser");
+
+  localStorage.removeItem("userRole");
+
+  location.reload();
 }
 
 function renderButtons(){
@@ -387,6 +597,7 @@ function renderButtons(){
       activity.slice(1);
 
     grid.innerHTML += `
+
       <button
         class="activity-btn"
         onmousedown="startPress('${activity}')"
@@ -398,6 +609,7 @@ function renderButtons(){
         (<span id="${activity}">0</span>h)
 
       </button>
+
     `;
   });
 }
@@ -415,7 +627,6 @@ function startPress(type){
       data[type] -= 0.5;
 
       updateUI(type);
-
     }
 
   }, 400);
@@ -671,11 +882,14 @@ function loadDay(){
 
     activities.forEach(a => {
 
+      data[a] = 0;
+
       document.getElementById(a).innerText = 0;
 
     });
 
     document.getElementById("notes").value = "";
+
   }
 
   const user =
@@ -710,9 +924,11 @@ function renderHeatmap(user){
     }
   }
 
-  document.getElementById("heatmap").innerHTML = "";
+  document.getElementById("heatmap").innerHTML =
+    "";
 
-  const cal = new CalHeatmap();
+  const cal =
+    new CalHeatmap();
 
   cal.paint({
 
@@ -784,17 +1000,28 @@ function renderDashboard(){
       calculateStreak(user);
 
     html += `
+
       <div class="dashboard-card">
 
         <h3>${user}</h3>
 
-        <p>🔥 Streak: ${streak}</p>
+        <p>
+          🔥 Streak:
+          ${streak}
+        </p>
 
-        <p>⏱ Total Hours: ${totalHours.toFixed(1)}</p>
+        <p>
+          ⏱ Total Hours:
+          ${totalHours.toFixed(1)}
+        </p>
 
-        <p>✅ Goal Days: ${completedDays}</p>
+        <p>
+          ✅ Goal Days:
+          ${completedDays}
+        </p>
 
       </div>
+
     `;
   });
 
@@ -806,4 +1033,3 @@ function renderDashboard(){
 
 </body>
 </html>
-```
