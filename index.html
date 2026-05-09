@@ -214,9 +214,9 @@
 
   </div>
 
-  <!-- TRACKER -->
+  <!-- TRACKER SECTION -->
 
-  <div class="card">
+  <div class="card" id="trackerSection">
 
     <div class="form-row">
 
@@ -331,7 +331,7 @@
 
   <!-- ACTIVITIES -->
 
-  <div class="card">
+  <div class="card" id="activitiesSection">
 
     <h3>📚 Activities</h3>
 
@@ -352,26 +352,6 @@
   <div class="card">
 
     <h3>
-      Total Hours:
-      <span id="total">0</span>
-    </h3>
-
-    <h3>
-      Progress:
-      <span id="percent">0</span>%
-    </h3>
-
-    <div class="progress-container">
-
-      <div
-        class="progress-bar"
-        id="bar">
-
-      </div>
-
-    </div>
-
-    <h3>
       🔥 Current Streak:
       <span id="streak">0</span> days
     </h3>
@@ -390,7 +370,7 @@
 
   <!-- NOTES -->
 
-  <div class="card">
+  <div class="card" id="notesSection">
 
     <div class="form-row">
 
@@ -406,6 +386,7 @@
 
     <button
       class="main-btn"
+      id="submitBtn"
       onclick="saveDay()"
       style="width:100%;">
 
@@ -431,14 +412,14 @@
 
 </div>
 
-<!-- HEATMAP SCRIPT -->
+<!-- HEATMAP -->
 
 <script src="https://cdn.jsdelivr.net/npm/cal-heatmap/dist/cal-heatmap.min.js"></script>
 
 <script>
 
 const WEB_APP_URL =
-  "YOUR_GOOGLE_APPS_SCRIPT_URL";
+  "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
 
 const usersConfig = {
 
@@ -524,6 +505,8 @@ window.onload = function(){
     }
 
     loadDay();
+
+    toggleParentView();
   }
 };
 
@@ -566,6 +549,8 @@ function login(){
 
     loadDay();
 
+    toggleParentView();
+
   } else {
 
     alert("Invalid PIN");
@@ -579,6 +564,24 @@ function logout(){
   localStorage.removeItem("userRole");
 
   location.reload();
+}
+
+function toggleParentView(){
+
+  const role =
+    localStorage.getItem("userRole");
+
+  const isParent =
+    role === "parent";
+
+  document.getElementById("trackerSection").style.display =
+    isParent ? "none" : "block";
+
+  document.getElementById("activitiesSection").style.display =
+    isParent ? "none" : "block";
+
+  document.getElementById("notesSection").style.display =
+    isParent ? "none" : "block";
 }
 
 function renderButtons(){
@@ -646,11 +649,20 @@ function updateUI(type){
 
   document.getElementById(type).innerText =
     data[type];
-
-  update();
 }
 
-function update(){
+function getStorageKey(){
+
+  const user =
+    document.getElementById("user").value;
+
+  const date =
+    document.getElementById("date").value;
+
+  return `${user}_${date}`;
+}
+
+function calculatePercent(){
 
   let totalActivities =
     Object.values(data).reduce((a,b)=>a+b,0);
@@ -670,46 +682,15 @@ function update(){
   let total =
     totalActivities + (school * 2);
 
-  document.getElementById("total").innerText =
-    total.toFixed(1);
-
   let percent =
     planned > 0
       ? (total / planned * 100).toFixed(0)
       : 0;
 
-  document.getElementById("percent").innerText =
-    percent;
-
-  let bar =
-    document.getElementById("bar");
-
-  bar.style.width =
-    Math.min(percent,100) + "%";
-
-  if(percent >= 100){
-
-    bar.style.background = "green";
-
-  } else if(percent >= 70){
-
-    bar.style.background = "orange";
-
-  } else {
-
-    bar.style.background = "red";
-  }
-}
-
-function getStorageKey(){
-
-  const user =
-    document.getElementById("user").value;
-
-  const date =
-    document.getElementById("date").value;
-
-  return `${user}_${date}`;
+  return {
+    total,
+    percent
+  };
 }
 
 function calculateStreak(user){
@@ -754,96 +735,141 @@ function calculateStreak(user){
   return streak;
 }
 
-function saveDay(){
+async function saveDay(){
 
-  let date =
-    document.getElementById("date").value;
+  try{
 
-  if(!date)
-    return alert("Select date");
+    const btn =
+      document.getElementById("submitBtn");
 
-  let user =
-    document.getElementById("user").value;
+    btn.disabled = true;
 
-  let school =
-    parseInt(
-      document.querySelector(
-        'input[name="school"]:checked'
-      ).value || 0
+    btn.innerText = "Saving...";
+
+    let date =
+      document.getElementById("date").value;
+
+    if(!date){
+
+      alert("Select date");
+
+      btn.disabled = false;
+
+      btn.innerText = "✅ Submit";
+
+      return;
+    }
+
+    let user =
+      document.getElementById("user").value;
+
+    let school =
+      parseInt(
+        document.querySelector(
+          'input[name="school"]:checked'
+        ).value || 0
+      );
+
+    let planned =
+      parseFloat(
+        document.getElementById("planned").value
+      ) || 3;
+
+    let calc =
+      calculatePercent();
+
+    let payload = {
+
+      user,
+      date,
+      planned,
+      school,
+
+      assignment:
+        document.querySelector(
+          'input[name="assignment"]:checked'
+        ).value,
+
+      ...data,
+
+      total: calc.total,
+
+      percent: calc.percent,
+
+      notes:
+        document.getElementById("notes").value
+    };
+
+    localStorage.setItem(
+      getStorageKey(),
+      JSON.stringify(payload)
     );
 
-  let planned =
-    parseFloat(
-      document.getElementById("planned").value
-    ) || 3;
+    if(
+      WEB_APP_URL &&
+      WEB_APP_URL.startsWith("https")
+    ){
 
-  let totalActivities =
-    Object.values(data).reduce((a,b)=>a+b,0);
+      await fetch(WEB_APP_URL,{
 
-  let total =
-    totalActivities + (school * 2);
+        method:"POST",
 
-  let percent =
-    planned > 0
-      ? (total / planned * 100).toFixed(0)
-      : 0;
+        headers:{
+          "Content-Type":"application/json"
+        },
 
-  let payload = {
+        body:JSON.stringify(payload)
 
-    user,
-    date,
-    planned,
-    school,
+      });
+    }
 
-    assignment:
-      document.querySelector(
-        'input[name="assignment"]:checked'
-      ).value,
+    let streak =
+      calculateStreak(user);
 
-    ...data,
+    document.getElementById("streak").innerText =
+      streak;
 
-    total,
-    percent,
+    renderHeatmap(user);
 
-    notes:
-      document.getElementById("notes").value
-  };
+    renderDashboard();
 
-  localStorage.setItem(
-    getStorageKey(),
-    JSON.stringify(payload)
-  );
+    if(calc.percent >= 100){
 
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    mode:"no-cors",
-    body:JSON.stringify(payload)
-  });
+      alert(`🔥 Great job ${user}! Goal achieved!`);
 
-  let streak =
-    calculateStreak(user);
+    } else {
 
-  document.getElementById("streak").innerText =
-    streak;
+      alert(`✅ Saved for ${user}`);
+    }
 
-  renderHeatmap(user);
+  } catch(error){
 
-  renderDashboard();
+    console.error(error);
 
-  if(percent >= 100){
+    alert(
+      "Error while saving. Check console."
+    );
 
-    alert(`🔥 Great job ${user}! Goal achieved!`);
+  } finally {
 
-  } else {
+    const btn =
+      document.getElementById("submitBtn");
 
-    alert(`✅ Saved for ${user}`);
+    btn.disabled = false;
+
+    btn.innerText = "✅ Submit";
   }
 }
 
 function loadDay(){
 
   activities.forEach(a => {
+
     data[a] = 0;
+
+    if(document.getElementById(a)){
+      document.getElementById(a).innerText = 0;
+    }
   });
 
   const saved =
@@ -869,8 +895,10 @@ function loadDay(){
 
       data[a] = payload[a] || 0;
 
-      document.getElementById(a).innerText =
-        data[a];
+      if(document.getElementById(a)){
+        document.getElementById(a).innerText =
+          data[a];
+      }
     });
 
     document.getElementById("notes").value =
@@ -878,16 +906,7 @@ function loadDay(){
 
   } else {
 
-    activities.forEach(a => {
-
-      data[a] = 0;
-
-      document.getElementById(a).innerText = 0;
-
-    });
-
     document.getElementById("notes").value = "";
-
   }
 
   const user =
@@ -898,8 +917,6 @@ function loadDay(){
 
   document.getElementById("streak").innerText =
     streak;
-
-  update();
 
   renderHeatmap(user);
 
