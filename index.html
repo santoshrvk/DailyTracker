@@ -1,3 +1,4 @@
+```html id="vtf91u"
 <!DOCTYPE html>
 <html>
 <head>
@@ -352,6 +353,26 @@
   <div class="card">
 
     <h3>
+      Total Hours:
+      <span id="total">0</span>
+    </h3>
+
+    <h3>
+      Progress:
+      <span id="percent">0</span>%
+    </h3>
+
+    <div class="progress-container">
+
+      <div
+        class="progress-bar"
+        id="bar">
+
+      </div>
+
+    </div>
+
+    <h3>
       🔥 Current Streak:
       <span id="streak">0</span> days
     </h3>
@@ -418,8 +439,12 @@
 
 <script>
 
-const WEB_APP_URL =
-  "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+//
+// TEMPORARY
+// Leave blank until Apps Script works
+//
+
+const WEB_APP_URL = "";
 
 const usersConfig = {
 
@@ -582,6 +607,9 @@ function toggleParentView(){
 
   document.getElementById("notesSection").style.display =
     isParent ? "none" : "block";
+
+  document.getElementById("submitBtn").style.display =
+    isParent ? "none" : "block";
 }
 
 function renderButtons(){
@@ -649,20 +677,11 @@ function updateUI(type){
 
   document.getElementById(type).innerText =
     data[type];
+
+  update();
 }
 
-function getStorageKey(){
-
-  const user =
-    document.getElementById("user").value;
-
-  const date =
-    document.getElementById("date").value;
-
-  return `${user}_${date}`;
-}
-
-function calculatePercent(){
+function update(){
 
   let totalActivities =
     Object.values(data).reduce((a,b)=>a+b,0);
@@ -682,15 +701,46 @@ function calculatePercent(){
   let total =
     totalActivities + (school * 2);
 
+  document.getElementById("total").innerText =
+    total.toFixed(1);
+
   let percent =
     planned > 0
       ? (total / planned * 100).toFixed(0)
       : 0;
 
-  return {
-    total,
-    percent
-  };
+  document.getElementById("percent").innerText =
+    percent;
+
+  let bar =
+    document.getElementById("bar");
+
+  bar.style.width =
+    Math.min(percent,100) + "%";
+
+  if(percent >= 100){
+
+    bar.style.background = "green";
+
+  } else if(percent >= 70){
+
+    bar.style.background = "orange";
+
+  } else {
+
+    bar.style.background = "red";
+  }
+}
+
+function getStorageKey(){
+
+  const user =
+    document.getElementById("user").value;
+
+  const date =
+    document.getElementById("date").value;
+
+  return `${user}_${date}`;
 }
 
 function calculateStreak(user){
@@ -753,10 +803,6 @@ async function saveDay(){
 
       alert("Select date");
 
-      btn.disabled = false;
-
-      btn.innerText = "✅ Submit";
-
       return;
     }
 
@@ -775,8 +821,16 @@ async function saveDay(){
         document.getElementById("planned").value
       ) || 3;
 
-    let calc =
-      calculatePercent();
+    let totalActivities =
+      Object.values(data).reduce((a,b)=>a+b,0);
+
+    let total =
+      totalActivities + (school * 2);
+
+    let percent =
+      planned > 0
+        ? (total / planned * 100).toFixed(0)
+        : 0;
 
     let payload = {
 
@@ -792,9 +846,8 @@ async function saveDay(){
 
       ...data,
 
-      total: calc.total,
-
-      percent: calc.percent,
+      total,
+      percent,
 
       notes:
         document.getElementById("notes").value
@@ -804,6 +857,10 @@ async function saveDay(){
       getStorageKey(),
       JSON.stringify(payload)
     );
+
+    //
+    // GOOGLE SHEETS
+    //
 
     if(
       WEB_APP_URL &&
@@ -829,11 +886,13 @@ async function saveDay(){
     document.getElementById("streak").innerText =
       streak;
 
+    update();
+
     renderHeatmap(user);
 
     renderDashboard();
 
-    if(calc.percent >= 100){
+    if(percent >= 100){
 
       alert(`🔥 Great job ${user}! Goal achieved!`);
 
@@ -917,6 +976,8 @@ function loadDay(){
 
   document.getElementById("streak").innerText =
     streak;
+
+  update();
 
   renderHeatmap(user);
 
@@ -1148,3 +1209,4 @@ function renderDashboard(){
 
 </body>
 </html>
+```
